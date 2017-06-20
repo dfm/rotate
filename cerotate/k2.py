@@ -20,13 +20,29 @@ def get_light_curve(campaign, epicid):
     url, fn = _everest_url_and_fn(campaign, epicid)
     with fits.open(url, cache=False) as hdus:
         data = hdus[1].data
+        hdr = hdus[1].header
         t = data["TIME"]
         q = data["QUALITY"]
         f = data["FLUX"]
+
+        breaks = [0]
+        for i in range(1, 100):
+            k = "BRKPT{0:02d}".format(i)
+            if k not in hdr:
+                break
+            breaks.append(hdr[k])
+        breaks = np.array(breaks + [len(t) + 1], dtype=int)
+
+    sections = np.zeros(len(t), dtype=int)
+    for i in range(len(breaks) - 1):
+        sections[breaks[i]:breaks[i+1]] = i
+
     m = np.isfinite(t) & np.isfinite(f) & (q == 0)
+    sections = np.ascontiguousarray(sections[m], dtype=np.int)
     f = f[m]
     f = (f / np.median(f) - 1.0) * 100.0
     return (
+        sections,
         np.ascontiguousarray(t[m], dtype=np.float64),
         np.ascontiguousarray(f, dtype=np.float64)
     )
