@@ -5,7 +5,14 @@ from __future__ import division, print_function
 import numpy as np
 from astropy.io import fits
 
+from .pipeline import Pipeline
+
 __all__ = ["get_light_curve"]
+
+class EPIC(Pipeline):
+    def process(self, epicid):
+        pass
+
 
 def _everest_url_and_fn(campaign, epicid):
     id_str = "{0:09d}".format(epicid)
@@ -16,9 +23,9 @@ def _everest_url_and_fn(campaign, epicid):
     url += "c{0:02d}/{1}00000/{2}/".format(campaign, id_str[:4], id_str[4:])
     return url + fn, fn
 
-def get_light_curve(campaign, epicid):
+def get_light_curve(campaign, epicid, cache=False):
     url, fn = _everest_url_and_fn(campaign, epicid)
-    with fits.open(url, cache=False) as hdus:
+    with fits.open(url, cache=cache) as hdus:
         data = hdus[1].data
         hdr = hdus[1].header
         t = data["TIME"]
@@ -46,3 +53,6 @@ def get_light_curve(campaign, epicid):
         np.ascontiguousarray(t[m], dtype=np.float64),
         np.ascontiguousarray(f, dtype=np.float64)
     )
+
+class EverestLightCurve(Pipeline):
+    pass

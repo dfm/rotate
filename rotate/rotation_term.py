@@ -34,6 +34,62 @@ class RotationTerm(terms.Term):
         )
 
 
+class MixtureOfSHOsTerm(terms.Term):
+    parameter_names = ("log_S0", "log_Q1", "log_f", "log_Q2", "log_P")
+
+    def get_real_coefficients(self, params):
+        log_S0, log_Q1, log_f, log_Q2, log_period = params
+
+        Q = np.exp(log_Q1)
+        if Q >= 0.5:
+            a, c = np.empty(0), np.empty(0)
+        else:
+            S0 = np.exp(log_S0)
+            w0 = 2.0 * np.pi * np.exp(-log_period)
+            f = np.sqrt(1.0 - 4.0 * Q**2)
+            a = 0.5*S0*w0*Q*np.array([1.0+1.0/f, 1.0-1.0/f])
+            c = 0.5*w0/Q*np.array([1.0-f, 1.0+f])
+
+        Q = np.exp(log_Q2)
+        if Q >= 0.5:
+            return a, c
+
+        S0 = np.exp(log_f + log_S0)
+        w0 = np.pi * np.exp(-log_period)
+        f = np.sqrt(1.0 - 4.0 * Q**2)
+        # Dealing with autograd's lack of append
+        a = list(a) + [v for v in 0.5*S0*w0*Q*np.array([1.0+1.0/f, 1.0-1.0/f])]
+        c = list(c) + [v for v in 0.5*w0/Q*np.array([1.0-f, 1.0+f])]
+        return np.array(a), np.array(c)
+
+    def get_complex_coefficients(self, params):
+        log_S0, log_Q1, log_f, log_Q2, log_period = params
+
+        Q = np.exp(log_Q1)
+        if Q < 0.5:
+            a, b, c, d = [], [], [], []
+        else:
+            S0 = np.exp(log_S0)
+            w0 = 2.0 * np.pi * np.exp(-log_period)
+            f = np.sqrt(4.0 * Q**2-1)
+            a = [S0 * w0 * Q]
+            b = [S0 * w0 * Q / f]
+            c = [0.5 * w0 / Q]
+            d = [0.5 * w0 / Q * f]
+
+        Q = np.exp(log_Q2)
+        if Q < 0.5:
+            return np.array(a), np.array(b), np.array(c), np.array(d)
+
+        S0 = np.exp(log_f + log_S0)
+        w0 = np.pi * np.exp(-log_period)
+        f = np.sqrt(4.0 * Q**2-1)
+        a = a + [S0 * w0 * Q]
+        b = b + [S0 * w0 * Q / f]
+        c = c + [0.5 * w0 / Q]
+        d = d + [0.5 * w0 / Q * f]
+        return np.array(a), np.array(b), np.array(c), np.array(d)
+
 class MixtureTerm(terms.Term):
     parameter_names = ("log_a1", "log_b1", "log_f1", "log_P",
                        "mix_par", "log_b2", "log_f2")
