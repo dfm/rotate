@@ -1,0 +1,175 @@
+% Copyright 2017 Dan Foreman-Mackey and the co-authors listed below.
+
+\documentclass[modern]{aastex61}
+
+\usepackage{microtype}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{multirow}
+\bibliographystyle{aasjournal}
+
+% ------------------ %
+% end of AASTeX mods %
+% ------------------ %
+
+% Projects:
+\newcommand{\project}[1]{\textsf{#1}}
+\newcommand{\kepler}{\project{Kepler}}
+\newcommand{\ktwo}{\project{K2}}
+\newcommand{\lsst}{\project{LSST}}
+\newcommand{\tess}{\project{TESS}}
+\newcommand{\celerite}{\project{celerite}}
+\newcommand{\emcee}{\project{emcee}}
+
+\newcommand{\foreign}[1]{\emph{#1}}
+\newcommand{\etal}{\foreign{et\,al.}}
+\newcommand{\etc}{\foreign{etc.}}
+\newcommand{\ie}{\foreign{i.e.}}
+
+\newcommand{\figureref}[1]{\ref{fig:#1}}
+\newcommand{\Figure}[1]{Figure~\figureref{#1}}
+\newcommand{\figurelabel}[1]{\label{fig:#1}}
+
+\newcommand{\Table}[1]{Table~\ref{tab:#1}}
+\newcommand{\tablelabel}[1]{\label{tab:#1}}
+
+\renewcommand{\eqref}[1]{\ref{eq:#1}}
+\newcommand{\Eq}[1]{Equation~(\eqref{#1})}
+\newcommand{\eq}[1]{\Eq{#1}}
+\newcommand{\eqalt}[1]{Equation~\eqref{#1}}
+\newcommand{\eqlabel}[1]{\label{eq:#1}}
+
+\newcommand{\sectionname}{Section}
+\newcommand{\sectref}[1]{\ref{sect:#1}}
+\newcommand{\Sect}[1]{\sectionname~\sectref{#1}}
+\newcommand{\sect}[1]{\Sect{#1}}
+\newcommand{\sectalt}[1]{\sectref{#1}}
+\newcommand{\App}[1]{Appendix~\sectref{#1}}
+\newcommand{\app}[1]{\App{#1}}
+\newcommand{\sectlabel}[1]{\label{sect:#1}}
+
+\newcommand{\T}{\ensuremath{\mathrm{T}}}
+\newcommand{\dd}{\ensuremath{\,\mathrm{d}}}
+\newcommand{\unit}[1]{{\ensuremath{\,\mathrm{#1}}}}
+\newcommand{\bvec}[1]{{\ensuremath{\boldsymbol{#1}}}}
+
+% TO DOS
+\newcommand{\todo}[3]{{\color{#2}\emph{#1}: #3}}
+\newcommand{\dfmtodo}[1]{\todo{DFM}{red}{#1}}
+
+% \shorttitle{}
+% \shortauthors{}
+% \submitted{Submitted to \textit{The AAS Journals}}
+
+% typography obsessions
+\setlength{\parindent}{3.0ex}
+
+\begin{document}\raggedbottom\sloppy\sloppypar\frenchspacing
+
+\title{%
+    The variable sky as seen by K2
+}
+
+\author[0000-0002-9328-5652]{Daniel Foreman-Mackey}
+\affil{Center for Computational Astrophysics, Flatiron Institute, New York, NY}
+
+\author[0000-0002-0296-3826]{Rodrigo Luger}
+\affil{Department~of~Astronomy, University~of~Washington, Seattle, WA}
+
+\author{Ruth Angus}
+\affil{Simons Fellow}
+\affil{Department of Astronomy, Columbia University, New York, NY}
+
+\begin{abstract}
+
+We measure all the periods.
+
+\end{abstract}
+
+\keywords{%
+ %methods: data analysis
+ %---
+ %methods: statistical
+ %---
+ %asteroseismology
+ %---
+ %stars: rotation
+ %---
+ %planetary systems
+}
+
+\section{Introduction}
+
+Some words... \citep{Luger:2017}
+
+\begin{eqnarray}
+k(\tau) &=&
+    \frac{a}{1+b+m}\,
+    \exp\left(-\frac{2\pi f \tau }{P\left(1+b+m\right)}\right)
+    \left[ b+m
+    +    \cos \left(\frac{2 \pi \tau}{P}\right)
+    + f\,\sin \left(\frac{2 \pi \tau}{P}\right)
+    \right]
+\end{eqnarray}
+where
+\begin{eqnarray}
+m &=& \sqrt{1+f^2} \quad.
+\end{eqnarray}
+This has the properties
+\begin{eqnarray}
+k(\tau) \ge 0
+\,,\quad
+k(0) = a
+\,,\quad\mathrm{and}\quad
+\left.\frac{\dd k(\tau)}{\dd\tau}\right|_{\tau=0} = 0
+\quad.
+\end{eqnarray}
+
+\acknowledgments
+It is a pleasure to thank
+\dfmtodo{many people}
+for helpful discussions informing the ideas and code presented here.
+
+This research made use of the NASA \project{Astrophysics Data System} and the
+NASA Exoplanet Archive.
+The Exoplanet Archive is operated by the California Institute of Technology,
+under contract with NASA under the Exoplanet Exploration Program.
+
+This paper includes data collected by the \kepler\ Mission. Funding for the
+\kepler\ Mission is provided by the NASA Science Mission directorate.
+We are grateful to the entire \kepler\ team, past and present.
+These data were obtained from the Mikulski Archive for Space Telescopes
+(MAST).
+STScI is operated by the Association of Universities for Research in
+Astronomy, Inc., under NASA contract NAS5-26555.
+Support for MAST is provided by the NASA Office of Space Science via grant
+NNX13AC07G and by other grants and contracts.
+
+%This research made use of Astropy, a community-developed core Python package
+%for Astronomy \citep{Astropy-Collaboration:2013}.
+
+\facility{Kepler}
+\software{%
+     %\project{AstroPy} \citep{Astropy-Collaboration:2013},
+     \project{corner.py} \citep{Foreman-Mackey:2016},
+     \project{Eigen} \citep{Guennebaud:2010},
+     \project{emcee} \citep{Foreman-Mackey:2013},
+     %\project{george} \citep{Ambikasaran:2016},
+     %\project{Julia} \citep{Bezanzon:2012},
+     %\project{LAPACK} \citep{Anderson:1999},
+     \project{matplotlib} \citep{Hunter:2007},
+     \project{numpy} \citep{Van-Der-Walt:2011},
+     %\project{transit} \citep{Foreman-Mackey:2016a},
+     \project{scipy} \citep{Jones:2001}.
+}
+
+%\vspace{5ex}
+\appendix
+
+There's always an appendix.
+
+\bibliography{rotate}
+
+\end{document}

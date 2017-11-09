@@ -18,7 +18,7 @@ class RotationTerm(terms.Term):
         mx = np.sqrt(1+f**2)
         c = 2*np.pi*f*np.exp(-log_P) / (1.0 + b + mx)
         return (
-            np.exp(log_a) * (mx + b) / (2.0*mx + b), c,
+            np.exp(log_a) * (mx + b) / (1.0 + mx + b), c,
         )
 
     def get_complex_coefficients(self, params):
@@ -27,7 +27,7 @@ class RotationTerm(terms.Term):
         f = np.exp(log_f)
         mx = np.sqrt(1+f**2)
         c = 2*np.pi*f*np.exp(-log_P) / (1.0 + b + mx)
-        factor = np.exp(log_a) / (2.0*mx + b)
+        factor = np.exp(log_a) / (1.0 + mx + b)
         return (
             factor, factor * np.exp(log_f),
             c, 2*np.pi*np.exp(-log_P),
@@ -112,8 +112,8 @@ class MixtureTerm(terms.Term):
 
         return (
             np.array([
-                a1 * (mx1 + b1) / (2.0*mx1 + b1),
-                a2 * (mx2 + b2) / (2.0*mx2 + b2),
+                a1 * (mx1 + b1) / (1.0 + mx1 + b1),
+                a2 * (mx2 + b2) / (1.0 + mx2 + b2),
             ]),
             np.array([c1, c2]),
         )
@@ -127,14 +127,14 @@ class MixtureTerm(terms.Term):
         f1 = np.exp(log_f1)
         mx1 = np.sqrt(1+f1**2)
         c1 = 2*np.pi*f1*np.exp(-log_P) / (1.0 + b1 + mx1)
-        factor1 = a1 / (2.0*mx1 + b1)
+        factor1 = a1 / (1.0 + mx1 + b1)
 
         a2 = np.exp(log_a1) * mix
         b2 = np.exp(log_b2)
         f2 = np.exp(log_f2)
         mx2 = np.sqrt(1+f2**2)
         c2 = 4*np.pi*f2*np.exp(-log_P) / (1.0 + b2 + mx2)
-        factor2 = a2 / (2.0*mx2 + b2)
+        factor2 = a2 / (1.0 + mx2 + b2)
 
         return (
             np.array([factor1, factor2]),
