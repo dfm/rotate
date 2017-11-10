@@ -2,57 +2,91 @@
 
 from __future__ import division, print_function
 
+import everest
+import exoarch
 import numpy as np
-from astropy.io import fits
-
-from .pipeline import Pipeline
+from scipy.signal import savgol_filter
 
 __all__ = ["get_light_curve"]
 
-class EPIC(Pipeline):
-    def process(self, epicid):
-        pass
+
+def sigma_clip(f, thresh=5, window=49):
+    """Get a binary mask of 'good' points using sigma clipping
+
+    Args:
+        thresh (float): The sigma clipping threshold.
+        window (int): The width of the smoothing window for sigma
+            clipping.
+
+    """
+    f = f - savgol_filter(f, window, 2) + np.nanmedian(f)
+    mu = np.median(f)
+    std = np.sqrt(np.median((f - mu)**2))
+    return np.abs(f - mu) < thresh*std
 
 
-def _everest_url_and_fn(campaign, epicid):
-    id_str = "{0:09d}".format(epicid)
-    fn = "hlsp_everest_k2_llc_{0}-c{1:02d}_kepler_v2.0_lc.fits".format(
-        id_str, campaign
-    )
-    url = "https://archive.stsci.edu/missions/hlsp/everest/v2/"
-    url += "c{0:02d}/{1}00000/{2}/".format(campaign, id_str[:4], id_str[4:])
-    return url + fn, fn
+def get_light_curve(epicid, season=None, mask_transits=True, mask_width=3,
+                    sigma_iter=10, sigma_thresh=5.0, sigma_window=49):
+    """Get the light curve for a given EPIC ID
 
-def get_light_curve(campaign, epicid, cache=False):
-    url, fn = _everest_url_and_fn(campaign, epicid)
-    with fits.open(url, cache=cache) as hdus:
-        data = hdus[1].data
-        hdr = hdus[1].header
-        t = data["TIME"]
-        q = data["QUALITY"]
-        f = data["FLUX"]
+    Args:
+        epicid (int): The ID of the target.
+        mask_transits (bool): Should known candidates be masked?
+        mask_width (float): The half width of the transit mask in units of the
+            transit duration.
+        sigma_iter (int): The maximum number of iterations of sigma clipping to
+            run.
+        sigma_thresh (float): The sigma clipping threshold.
+        sigma_window (int): The width of the smoothing window for sigma
+            clipping.
 
-        breaks = [0]
-        for i in range(1, 100):
-            k = "BRKPT{0:02d}".format(i)
-            if k not in hdr:
-                break
-            breaks.append(hdr[k])
-        breaks = np.array(breaks + [len(t) + 1], dtype=int)
+    Returns:
+        t (ndarray): The array of timestamps.
+        F (ndarray): The ``(ntime, npix)`` matrix of (normalized) pixel flux
+            time series.
+        yerr (ndarray): An estimate of the uncertainties of the SAP flux
+            (``sum(F, axis=1)``).
 
-    sections = np.zeros(len(t), dtype=int)
-    for i in range(len(breaks) - 1):
-        sections[breaks[i]:breaks[i+1]] = i
+    """
+    star = everest.Everest(epicid, season=season, quiet=True)
+    t = star.apply_mask(star.time)
+    F = star.apply_mask(star.fpix)
 
-    m = np.isfinite(t) & np.isfinite(f) & (q == 0)
-    sections = np.ascontiguousarray(sections[m], dtype=np.int)
-    f = f[m]
-    f = (f / np.median(f) - 1.0) * 100.0
-    return (
-        sections,
-        np.ascontiguousarray(t[m], dtype=np.float64),
-        np.ascontiguousarray(f, dtype=np.float64)
-    )
+    # Mask any known transits
+    if mask_transits:
+        k2cand = exoarch.ExoplanetArchiveCatalog("k2candidates").df
+        epic = k2cand[k2cand.epic_name == "EPIC {0}".format(epicid)]
+        cands = epic.groupby("epic_candname").mean()
+        for _, cand in cands.iterrows():
+            t0 = cand.pl_tranmid - 2454833.0
+            per = cand.pl_orbper
+            dur = cand.pl_trandur
+            m = np.abs((t - t0 + 0.5*per) % per - 0.5*per) > mask_width * dur
+            t = t[m]
+            F = F[m]
 
-class EverestLightCurve(Pipeline):
-    pass
+    # Use 1st order PLD to do some sigma clipping
+    fsap = np.sum(F, axis=1)
+    A = F / fsap[:, None]
+    m = np.ones_like(fsap, dtype=bool)
+    for i in range(sigma_iter):
+        w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, fsap[m]))
+        resid = fsap - np.dot(A, w)
+        m_new = sigma_clip(resid, thresh=sigma_thresh, window=sigma_window)
+        if m.sum() == m_new.sum():
+            m = m_new
+            break
+        m = m_new
+    t = t[m]
+    fsap = fsap[m]
+    F = F[m]
+
+    # Normalize
+    med = np.median(fsap)
+    fsap /= med
+    F /= med
+
+    # Estimate flux uncertainty
+    yerr = np.nanmedian(np.abs(np.diff(fsap)))
+
+    return t, F, yerr

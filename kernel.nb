@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     14711,        361]
-NotebookOptionsPosition[     13510,        331]
-NotebookOutlinePosition[     13867,        347]
-CellTagsIndexPosition[     13824,        344]
+NotebookDataLength[     14913,        362]
+NotebookOptionsPosition[     13711,        332]
+NotebookOutlinePosition[     14068,        348]
+CellTagsIndexPosition[     14025,        345]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -138,10 +138,10 @@ Cell[BoxData[
  TagBox[
   StyleBox[
    DynamicModuleBox[{$CellContext`a$$ = 1, $CellContext`b$$ = 
-    0, $CellContext`f$$ = 0., $CellContext`P$$ = 1, Typeset`show$$ = True, 
-    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
-    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
-    "\"untitled\"", Typeset`specs$$ = {{
+    0.49999999999954525`, $CellContext`f$$ = 0.1, $CellContext`P$$ = 1, 
+    Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
+    Typeset`bookmarkMode$$ = "Menu", Typeset`animator$$, Typeset`animvar$$ = 
+    1, Typeset`name$$ = "\"untitled\"", Typeset`specs$$ = {{
       Hold[$CellContext`a$$], 1, 10}, {
       Hold[$CellContext`b$$], 0, 100}, {
       Hold[$CellContext`f$$], 0, 10}, {
@@ -168,7 +168,7 @@ $CellContext`f$$, $CellContext`P$$], {$CellContext`x, 0, 3 $CellContext`P$$},
       "Specifications" :> {{$CellContext`a$$, 1, 10}, {$CellContext`b$$, 0, 
          100}, {$CellContext`f$$, 0, 10}, {$CellContext`P$$, 1, 5}}, 
       "Options" :> {}, "DefaultOptions" :> {}],
-     ImageSizeCache->{405., {218., 224.}},
+     ImageSizeCache->{405., {231., 237.}},
      SingleEvaluation->True],
     Deinitialization:>None,
     DynamicModuleValues:>{},
@@ -305,28 +305,29 @@ $CellContext`f2$$, $CellContext`m$$, $CellContext`P$$], {$CellContext`x, 0,
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{
-  RowBox[{"kern", "[", 
-   RowBox[{
-   "x", ",", "a1", ",", "b1", ",", "f1", ",", "a2", ",", "b2", ",", "f2", ",",
-     "m", ",", "P"}], "]"}], "/.", 
-  RowBox[{"{", 
-   RowBox[{"x", "\[Rule]", "0"}], "}"}]}]], "Input",
+ RowBox[{"TeXForm", "[", 
+  RowBox[{"k0", "[", 
+   RowBox[{"tau", ",", "a", ",", "b", ",", "f", ",", "P"}], "]"}], 
+  "]"}]], "Input",
  CellChangeTimes->{{3.7192323398346453`*^9, 3.719232363738549*^9}, {
   3.719232412666347*^9, 3.719232414994733*^9}, {3.719232633947743*^9, 
   3.7192326400097713`*^9}, {3.719232704170341*^9, 3.7192327077351713`*^9}, {
-  3.719233187309134*^9, 
-  3.71923320074006*^9}},ExpressionUUID->"bd7a7d41-445f-4fe7-8cb0-\
+  3.719233187309134*^9, 3.71923320074006*^9}, {3.719235540034501*^9, 
+  3.719235569361292*^9}},ExpressionUUID->"bd7a7d41-445f-4fe7-8cb0-\
 b1958cf9b899"],
 
-Cell[BoxData[
- RowBox[{"a1", "+", 
-  RowBox[{"a2", " ", "m"}]}]], "Output",
+Cell["\<\
+\\frac{a e^{-\\frac{2 \\pi  f \\tau }{P \\left(b+\\sqrt{f^2+1}+1\\right)}}
+   \\left(b+\\sqrt{f^2+1}+f \\sin \\left(\\frac{2 \\pi  \\tau \
+}{P}\\right)+\\cos \\left(\\frac{2 \\pi
+    \\tau }{P}\\right)\\right)}{b+\\sqrt{f^2+1}+1}\
+\>", "Output",
  CellChangeTimes->{{3.719232340124*^9, 3.719232364020464*^9}, 
    3.71923241511136*^9, {3.71923263428939*^9, 3.7192326664489717`*^9}, {
    3.719232701383299*^9, 3.719232734708747*^9}, {3.719233201122282*^9, 
-   3.719233221019232*^9}},ExpressionUUID->"a2d90fa1-a1b3-4a42-9c52-\
-899da9190225"]
+   3.719233221019232*^9}, {3.719235542869286*^9, 
+   3.719235570133931*^9}},ExpressionUUID->"52282d0e-f93c-4776-9a05-\
+26f70f50d827"]
 }, Open  ]]
 },
 WindowSize->{808, 911},
@@ -353,15 +354,15 @@ Cell[3375, 99, 355, 6, 34, "Output",ExpressionUUID->"fdf7053e-e541-4a6f-aa21-77d
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[3767, 110, 876, 24, 52, "Input",ExpressionUUID->"4086b5ec-d4a4-429f-bf83-2954f756d4bf"],
-Cell[4646, 136, 2476, 48, 495, "Output",ExpressionUUID->"5a1a571e-10e0-4583-9363-fbdf5d32ebe2"]
+Cell[4646, 136, 2496, 48, 521, "Output",ExpressionUUID->"5a1a571e-10e0-4583-9363-fbdf5d32ebe2"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[7159, 189, 1572, 40, 73, "Input",ExpressionUUID->"f86587a9-1c7d-4a3a-bb2f-b2785a5ed6c6"],
-Cell[8734, 231, 3786, 70, 312, "Output",ExpressionUUID->"9c5f08ed-6ed7-439f-8812-70a20c8e663f"]
+Cell[7179, 189, 1572, 40, 73, "Input",ExpressionUUID->"f86587a9-1c7d-4a3a-bb2f-b2785a5ed6c6"],
+Cell[8754, 231, 3786, 70, 312, "Output",ExpressionUUID->"9c5f08ed-6ed7-439f-8812-70a20c8e663f"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12557, 306, 567, 13, 30, "Input",ExpressionUUID->"bd7a7d41-445f-4fe7-8cb0-b1958cf9b899"],
-Cell[13127, 321, 367, 7, 34, "Output",ExpressionUUID->"a2d90fa1-a1b3-4a42-9c52-899da9190225"]
+Cell[12577, 306, 518, 10, 30, "Input",ExpressionUUID->"bd7a7d41-445f-4fe7-8cb0-b1958cf9b899"],
+Cell[13098, 318, 597, 11, 81, "Output",ExpressionUUID->"52282d0e-f93c-4776-9a05-26f70f50d827"]
 }, Open  ]]
 }
 ]

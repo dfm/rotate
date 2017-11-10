@@ -5,6 +5,8 @@ from __future__ import division, print_function
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
+from emcee.autocorr import function_1d as autocorr_function
+
 from astropy.stats import LombScargle
 
 __all__ = ["lomb_scargle_estimator", "autocorr_estimator"]
@@ -70,6 +72,7 @@ def lomb_scargle_estimator(x, y, yerr=None,
         periodogram=(freq, power),
         peaks=peaks,
     )
+
 
 def autocorr_estimator(x, y, yerr=None,
                        min_period=None, max_period=None,
@@ -167,11 +170,3 @@ def autocorr_estimator(x, y, yerr=None,
     period_uncert /= np.sqrt(len(peaks) - 2)
     result["peaks"] = [dict(period=period, period_uncert=period_uncert)]
     return result
-
-def autocorr_function(x):
-    """Estimate the autocorrelation function of a 1D dataset"""
-    x = np.atleast_1d(x)
-    n = len(x)
-    f = np.fft.fft(x - np.mean(x), n=2*n)
-    acf = np.fft.ifft(f * np.conjugate(f))[:n].real
-    return acf / acf[0]

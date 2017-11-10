@@ -90,6 +90,7 @@ class MixtureOfSHOsTerm(terms.Term):
         d = d + [0.5 * w0 / Q * f]
         return np.array(a), np.array(b), np.array(c), np.array(d)
 
+
 class MixtureTerm(terms.Term):
     parameter_names = ("log_a1", "log_b1", "log_f1", "log_P",
                        "mix_par", "log_b2", "log_f2")
