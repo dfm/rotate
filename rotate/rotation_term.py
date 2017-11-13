@@ -150,3 +150,9 @@ class MixtureTerm(terms.Term):
             return -np.inf
         mix = 1.0 / (1.0 + np.exp(-self.mix_par))
         return lp + np.log(mix) + np.log(1.0 - mix)
+
+    def grad_log_prior(self):
+        g = np.zeros(self.full_size)
+        theta = np.exp(-self.mix_par)
+        g[4] += (theta - 1) / (1 + theta)
+        return g[self.unfrozen_mask]

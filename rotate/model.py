@@ -24,37 +24,16 @@ class RotationModel(modeling.ModelSet):
         self.t = np.array(t)
         self.F = np.array(F)
         self.fsap = np.sum(F, axis=1)
-        self.fdet = self.fsap
+        self.yerr = yerr
         A = self.F / self.fsap[:, None]
         self.min_period = min_period
         self.max_period = max_period
 
         # Run 1st order PLD
-        w = np.linalg.solve(np.dot(A.T, A), np.dot(A.T, self.fsap))
-        resid = self.fsap - np.dot(A, w)
+        w = np.linalg.solve(np.dot(A.T, A), np.dot(A.T, self.fsap-1.0))
+        self.fdet = self.fsap - np.dot(A, w)
 
-        # Esimate the periods
-        if lomb_scargle_kwargs is None:
-            lomb_scargle_kwargs = {}
-        self.lomb_scargle_result = \
-            lomb_scargle_estimator(t, resid, yerr, min_period, max_period,
-                                   filter_period=10.0, **lomb_scargle_kwargs)
-        peaks = self.lomb_scargle_result["peaks"]
-        if len(peaks):
-            self.lomb_scargle_period = peaks[0]["period"]
-        else:
-            self.lomb_scargle_period = self.max_period
-
-        if autocorr_kwargs is None:
-            autocorr_kwargs = {}
-        self.autocorr_result = \
-            autocorr_estimator(t, resid, yerr, min_period, max_period,
-                               **autocorr_kwargs)
-        peaks = self.autocorr_result["peaks"]
-        if len(peaks):
-            self.autocorr_period = peaks[0]["period"]
-        else:
-            self.autocorr_period = self.max_period
+        self.update_estimators(lomb_scargle_kwargs, autocorr_kwargs)
 
         # Set up the PLD model
         pld = PLDModel(self.t, self.F / self.fsap[:, None], **pld_kwargs)
@@ -78,6 +57,33 @@ class RotationModel(modeling.ModelSet):
 
         # Set up an optimization cache
         self.model_cache = []
+
+    def update_estimators(self, lomb_scargle_kwargs=None,
+                          autocorr_kwargs=None):
+        # Esimate the periods
+        if lomb_scargle_kwargs is None:
+            lomb_scargle_kwargs = dict(filter_period=10.0)
+        self.lomb_scargle_result = \
+            lomb_scargle_estimator(self.t, self.fdet, self.yerr,
+                                   self.min_period, self.max_period,
+                                   **lomb_scargle_kwargs)
+        peaks = self.lomb_scargle_result["peaks"]
+        if len(peaks):
+            self.lomb_scargle_period = peaks[0]["period"]
+        else:
+            self.lomb_scargle_period = self.max_period
+
+        if autocorr_kwargs is None:
+            autocorr_kwargs = {}
+        self.autocorr_result = \
+            autocorr_estimator(self.t, self.fdet, self.yerr,
+                               self.min_period, self.max_period,
+                               **autocorr_kwargs)
+        peaks = self.autocorr_result["peaks"]
+        if len(peaks):
+            self.autocorr_period = peaks[0]["period"]
+        else:
+            self.autocorr_period = self.max_period
 
     def use_simple_gp(self):
         self.models["gp"] = self.simple_gp

@@ -1,0 +1,21 @@
+name: rotate
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3
+  - numpy
+  - matplotlib
+  - scipy
+  - astropy
+  - h5py
+  - autograd
+  - pybind11
+  #- celerite>=0.3
+  - tqdm
+  - pip:
+    - git+https://github.com/dfm/emcee
+    - git+https://github.com/dfm/exoarch
+    - everest-pipeline
+    - celerite>=0.3
