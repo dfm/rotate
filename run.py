@@ -42,15 +42,17 @@ def plot_estimators():  # NOQA
     ax = axes[1]
     tau, acor = model.autocorr_result["autocorr"]
     ax.plot(tau, acor, "k")
+    for peak in model.lomb_scargle_result["peaks"]:
+        ax.axvline(peak["period"], color="k", alpha=0.3, lw=2)
     for peak in model.autocorr_result["peaks"]:
         period = peak["period"]
         t = period
         while t < model.t.max():
-            ax.axvline(t, color="k", alpha=0.3, lw=2)
+            ax.axvline(t, color="k", lw=0.75)
             t += period
     ax.set_xlim(0, model.t.max() - model.t.min())
-    ax.annotate("autocorr function", xy=(1, 0), xycoords="axes fraction",
-                ha="right", va="top", xytext=(-5, 5),
+    ax.annotate("autocorr function", xy=(1, 1), xycoords="axes fraction",
+                ha="right", va="top", xytext=(-5, -5),
                 textcoords="offset points")
 
     ax.set_xlabel("period [days]")
