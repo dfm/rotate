@@ -26,26 +26,31 @@ t, F, yerr = get_light_curve(epicid)
 model = RotationModel(t, F, yerr)
 
 def plot_estimators():  # NOQA
-    fig, axes = plt.subplots(2, 1, figsize=(10, 5), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(10, 5))
 
     ax = axes[0]
     freq, power = model.lomb_scargle_result["periodogram"]
     period = 1.0 / freq
     ax.loglog(period, power, "k")
     for peak in model.lomb_scargle_result["peaks"]:
-        ax.axvline(peak["period"], color="k", alpha=0.3, lw=3)
+        ax.axvline(peak["period"], color="k", alpha=0.3, lw=2)
     ax.annotate("periodogram", xy=(0, 1), xycoords="axes fraction",
                 ha="left", va="top", xytext=(5, -5),
                 textcoords="offset points")
+    ax.set_xlim(model.min_period, model.max_period)
 
     ax = axes[1]
     tau, acor = model.autocorr_result["autocorr"]
     ax.plot(tau, acor, "k")
     for peak in model.autocorr_result["peaks"]:
-        ax.axvline(peak["period"], color="k", alpha=0.3, lw=3)
-    ax.set_xlim(model.min_period, model.max_period)
-    ax.annotate("autocorr function", xy=(0, 0), xycoords="axes fraction",
-                ha="left", va="bottom", xytext=(5, 5),
+        period = peak["period"]
+        t = period
+        while t < model.t.max():
+            ax.axvline(t, color="k", alpha=0.3, lw=2)
+            t += period
+    ax.set_xlim(0, model.t.max() - model.t.min())
+    ax.annotate("autocorr function", xy=(1, 0), xycoords="axes fraction",
+                ha="right", va="top", xytext=(-5, 5),
                 textcoords="offset points")
 
     ax.set_xlabel("period [days]")
