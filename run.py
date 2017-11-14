@@ -8,6 +8,7 @@ __all__ = []
 import argparse
 from multiprocessing import Pool
 
+import emcee
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -58,7 +59,7 @@ def plot_estimators():  # NOQA
     ax.set_xlabel("period [days]")
     return fig
 
-fig = plot_estimators()
+fig = plot_estimators()  # NOQA
 fig.savefig("{0}-est0.pdf".format(epicid), bbox_inches="tight")
 plt.close(fig)
 
@@ -124,3 +125,61 @@ model.update_estimators()
 fig = plot_estimators()
 fig.savefig("{0}-est.pdf".format(epicid), bbox_inches="tight")
 plt.close(fig)
+
+# Run MCMC
+def log_prob(params):  # NOQA
+    model.gp.set_parameter_vector(params)
+    lp = model.gp.log_prior()
+    if not np.isfinite(lp):
+        return -np.inf, lp, model.period
+    ll = model.gp.log_likelihood(model.fdet, quiet=True)
+    if not np.isfinite(ll):
+        return -np.inf, lp, model.period
+    return ll + lp, lp, model.period
+
+init0 = model.gp.get_parameter_vector()  # NOQA
+init = init0 + 1e-5*np.random.randn(64, len(init0))
+lp = np.array(list(map(log_prob, init)))
+m = ~np.isfinite(lp)
+while np.any(m):
+    init[m] = init0 + 1e-5*np.random.randn(m.sum(), len(init0))
+    lp[m] = np.array(list(map(log_prob, init[m])))
+    m = ~np.isfinite(lp)
+nwalkers, ndim = init.shape
+
+# Backend
+# Don't forget to clear it in case the file already exists
+filename = "{0}-chain.h5".format(epicid)  # NOQA
+backend = emcee.backends.HDFBackend(filename)
+backend.reset(nwalkers, ndim)
+
+# Proposals
+moves = [
+    emcee.moves.StretchMove(randomize_split=True),
+    emcee.moves.DEMove(1.0, randomize_split=True),
+    emcee.moves.DESnookerMove(randomize_split=True),
+]
+
+with Pool() as pool:
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, pool=pool,
+                                    moves=moves, backend=backend)
+
+    old_tau = np.inf
+    autocorr = []
+    while True:
+        sampler.run_mcmc(init, 2000, progress=True)
+        init = None
+
+        # Compute the autocorrelation time so far
+        # Using tol=0 means that we'll always get an estimate even
+        # if it isn't trustworthy
+        tau = sampler.get_autocorr_time(tol=0)
+        autocorr.append(np.mean(tau))
+        print(autocorr[-1])
+
+        # Check convergence
+        converged = np.all(tau * 100 < sampler.iteration)
+        converged &= np.all(np.abs(old_tau - tau) / tau < 0.01)
+        if converged:
+            break
+        old_tau = tau
