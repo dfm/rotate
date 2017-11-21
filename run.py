@@ -3,8 +3,7 @@
 
 from __future__ import division, print_function
 
-__all__ = []
-
+import os
 import argparse
 from multiprocessing import Pool
 
@@ -17,7 +16,14 @@ from rotate.model import RotationModel
 
 parser = argparse.ArgumentParser()
 parser.add_argument("epicid", type=int, help="the target ID")
+parser.add_argument("-o", "--output", default="output",
+                    help="the name of the output directory")
 args = parser.parse_args()
+
+def format_filename(fn):  # NOQA
+    return os.path.join(args.output, "{0}".format(args.epicid), fn)
+
+os.makedirs(format_filename(""), exist_ok=True)  # NOQA
 
 # Load the data
 epicid = args.epicid
@@ -60,7 +66,7 @@ def plot_estimators():  # NOQA
     return fig
 
 fig = plot_estimators()  # NOQA
-fig.savefig("{0}-est0.pdf".format(epicid), bbox_inches="tight")
+fig.savefig(format_filename("est0.pdf"), bbox_inches="tight")
 plt.close(fig)
 
 # Initial fit
@@ -117,13 +123,13 @@ def plot_data():  # NOQA
     return fig
 
 fig = plot_data()  # NOQA
-fig.savefig("{0}-data.pdf".format(epicid), bbox_inches="tight")
+fig.savefig(format_filename("data.pdf"), bbox_inches="tight")
 plt.close(fig)
 
 model.update_estimators()
 
 fig = plot_estimators()
-fig.savefig("{0}-est.pdf".format(epicid), bbox_inches="tight")
+fig.savefig(format_filename("est.pdf"), bbox_inches="tight")
 plt.close(fig)
 
 # Run MCMC
@@ -149,7 +155,7 @@ nwalkers, ndim = init.shape
 
 # Backend
 # Don't forget to clear it in case the file already exists
-filename = "{0}-chain.h5".format(epicid)  # NOQA
+filename = format_filename("chain.h5")  # NOQA
 backend = emcee.backends.HDFBackend(filename)
 backend.reset(nwalkers, ndim)
 
