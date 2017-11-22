@@ -9,6 +9,7 @@ import argparse
 from multiprocessing import Pool
 
 import emcee
+import corner
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -193,3 +194,8 @@ with Pool() as pool:
         if converged:
             break
         old_tau = tau
+
+flatchain = sampler.get_chain(discard=1500, thin=int(np.min(tau)), flat=True)
+fig = corner.corner(flatchain)
+fig.savefig(format_filename("corner.png"))
+plt.close(fig)
