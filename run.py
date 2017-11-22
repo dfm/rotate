@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import pickle
 import argparse
 from multiprocessing import Pool
 
@@ -132,6 +133,9 @@ fig = plot_estimators()
 fig.savefig(format_filename("est.pdf"), bbox_inches="tight")
 plt.close(fig)
 
+with open(format_filename("model.pkl"), "wb") as f:
+    pickle.dump(model, f, -1)
+
 # Run MCMC
 def log_prob(params):  # NOQA
     model.gp.set_parameter_vector(params)
@@ -173,7 +177,7 @@ with Pool() as pool:
     old_tau = np.inf
     autocorr = []
     while True:
-        sampler.run_mcmc(init, 2000, progress=True)
+        sampler.run_mcmc(init, 5000, progress=True)
         init = None
 
         # Compute the autocorrelation time so far
@@ -185,7 +189,7 @@ with Pool() as pool:
 
         # Check convergence
         converged = np.all(tau * 100 < sampler.iteration)
-        converged &= np.all(np.abs(old_tau - tau) / tau < 0.01)
+        converged &= np.all(np.abs(old_tau - tau) / tau < 0.1)
         if converged:
             break
         old_tau = tau
