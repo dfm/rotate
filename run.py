@@ -9,6 +9,7 @@ import argparse
 from multiprocessing import Pool
 
 import emcee
+import corner
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -186,7 +187,7 @@ with Pool() as pool:
     old_tau = np.inf
     autocorr = []
     while True:
-        sampler.run_mcmc(init, 2000, progress=True)
+        sampler.run_mcmc(init, 5000, progress=True)
         init = None
 
         # Compute the autocorrelation time so far
@@ -198,7 +199,12 @@ with Pool() as pool:
 
         # Check convergence
         converged = np.all(tau * 100 < sampler.iteration)
-        converged &= np.all(np.abs(old_tau - tau) / tau < 0.01)
+        converged &= np.all(np.abs(old_tau - tau) / tau < 0.1)
         if converged:
             break
         old_tau = tau
+
+flatchain = sampler.get_chain(discard=1500, thin=int(np.min(tau)), flat=True)
+fig = corner.corner(flatchain)
+fig.savefig(format_filename("corner.png"))
+plt.close(fig)
