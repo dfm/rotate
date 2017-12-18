@@ -160,11 +160,11 @@ def log_prob(params):  # NOQA
 
 init0 = model.gp.get_parameter_vector()  # NOQA
 init = init0 + 1e-5*np.random.randn(64, len(init0))
-lp = np.array(list(map(log_prob, init)))
+lp = np.array(list(map(log_prob, init)))[:, 0]
 m = ~np.isfinite(lp)
 while np.any(m):
     init[m] = init0 + 1e-5*np.random.randn(m.sum(), len(init0))
-    lp[m] = np.array(list(map(log_prob, init[m])))
+    lp[m] = np.array(list(map(log_prob, init[m])))[:, 0]
     m = ~np.isfinite(lp)
 nwalkers, ndim = init.shape
 
