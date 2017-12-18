@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import json
 import pickle
 import argparse
 from multiprocessing import Pool
@@ -144,7 +145,7 @@ with open(format_filename("summary.json"), "w") as f:
         epicid=epicid,
         lomb_scargle_period=model.lomb_scargle_period,
         autocorr_period=model.autocorr_period,
-    ), sort_keys=True, indent=2)
+    ), f, sort_keys=True, indent=2)
 
 # Run MCMC
 def log_prob(params):  # NOQA
