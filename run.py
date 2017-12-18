@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import pickle
 import argparse
 from multiprocessing import Pool
 
@@ -131,6 +132,18 @@ model.update_estimators()
 fig = plot_estimators()
 fig.savefig(format_filename("est.pdf"), bbox_inches="tight")
 plt.close(fig)
+
+# Save the maximum likelihood model
+with open(format_filename("model.pkl"), "wb") as f:
+    pickle.dump(model, f, -1)
+
+# Save maximum likelihood results
+with open(format_filename("summary.json"), "w") as f:
+    json.dump(dict(
+        epicid=epicid,
+        lomb_scargle_period=model.lomb_scargle_period,
+        autocorr_period=model.autocorr_period,
+    ), sort_keys=True, indent=2)
 
 # Run MCMC
 def log_prob(params):  # NOQA
