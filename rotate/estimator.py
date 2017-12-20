@@ -45,6 +45,7 @@ def lomb_scargle_estimator(x, y, yerr=None,
     model = LombScargle(x, y, yerr)
     freq, power = model.autopower(method="fast", normalization="psd", **kwargs)
     power /= len(x)
+    power_est = np.array(power)
 
     # Filter long periods
     if filter_period is not None:
@@ -69,7 +70,7 @@ def lomb_scargle_estimator(x, y, yerr=None,
         ))
 
     return dict(
-        periodogram=(freq, power),
+        periodogram=(freq, power_est),
         peaks=peaks,
     )
 
@@ -147,26 +148,29 @@ def autocorr_estimator(x, y, yerr=None,
     if tau[peak_inds[0]] > max_period:
         return result
 
-    # This is the initial estimate of the period
-    period = tau[peak_inds[0]]
-    peaks = [0.0, period]
-
-    # Find the string of peaks within 0.3 of the period estimate
-    for i in peak_inds[1:]:
-        next_peak = peaks[-1] + period
-        if np.abs(next_peak - tau[i]) < 0.3 * period:
-            peaks.append(tau[i])
-            if len(peaks) >= max_peaks + 1:
-                break
-
-    if len(peaks) <= 2:
-        result["peaks"] = [dict(period=peaks[1], period_uncert=np.nan)]
-        return result
-
-    # Estimate the period and the uncertainties
-    diff = np.diff(peaks)
-    period = np.median(diff)
-    period_uncert = 1.483 * np.median(np.abs(diff - period))
-    period_uncert /= np.sqrt(len(peaks) - 2)
-    result["peaks"] = [dict(period=period, period_uncert=period_uncert)]
+    result["peaks"] = [dict(period=tau[peak_inds[0]], period_uncert=np.nan)]
     return result
+
+    # # This is the initial estimate of the period
+    # period = tau[peak_inds[0]]
+    # peaks = [0.0, period]
+
+    # # Find the string of peaks within 0.3 of the period estimate
+    # for i in peak_inds[1:]:
+    #     next_peak = peaks[-1] + period
+    #     if np.abs(next_peak - tau[i]) < 0.3 * period:
+    #         peaks.append(tau[i])
+    #         if len(peaks) >= max_peaks + 1:
+    #             break
+
+    # if len(peaks) <= 2:
+    #     result["peaks"] = [dict(period=peaks[1], period_uncert=np.nan)]
+    #     return result
+
+    # # Estimate the period and the uncertainties
+    # diff = np.diff(peaks)
+    # period = np.median(diff)
+    # period_uncert = 1.483 * np.median(np.abs(diff - period))
+    # period_uncert /= np.sqrt(len(peaks) - 2)
+    # result["peaks"] = [dict(period=period, period_uncert=period_uncert)]
+    # return result

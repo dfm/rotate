@@ -59,7 +59,7 @@ class PLDModel(modeling.Model):
         self.block_inds = list(zip(block_inds[:-1], block_inds[1:]))
         self.nblocks = len(self.block_sizes)
 
-        params = dict(("log_lambda_{0}".format(i), -1.0)
+        params = dict(("log_lambda_{0}".format(i), 0.0)
                       for i in range(self.nblocks))
         self.parameter_names = tuple(sorted(params.keys()))
         params["bounds"] = [(-5.0, 5.0) for i in range(self.nblocks)]

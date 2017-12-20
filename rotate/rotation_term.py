@@ -38,7 +38,7 @@ class MixtureOfSHOsTerm(terms.Term):
     parameter_names = ("log_S0", "log_Q1", "mix_par", "log_Q2", "log_P")
 
     def get_real_coefficients(self, params):
-        log_S0, log_Q1, log_f, log_Q2, log_period = params
+        log_S0, log_Q1, mix_par, log_Q2, log_period = params
 
         Q = np.exp(log_Q1)
         if Q >= 0.5:
@@ -54,9 +54,9 @@ class MixtureOfSHOsTerm(terms.Term):
         if Q >= 0.5:
             return a, c
 
-        mix = 1.0 / (1.0 + np.exp(-self.mix_par))
-        S0 = mix*np.exp(log_S0)
-        w0 = np.pi * np.exp(-log_period)
+        mix = 1.0 / (1.0 + np.exp(-mix_par))
+        S0 = mix*np.exp(log_S0 + 2*log_Q1 - 2*log_Q2)
+        w0 = 4.0 * np.pi * np.exp(-log_period)
         f = np.sqrt(1.0 - 4.0 * Q**2)
         # Dealing with autograd's lack of append
         a = list(a) + [v for v in 0.5*S0*w0*Q*np.array([1.0+1.0/f, 1.0-1.0/f])]
@@ -64,7 +64,7 @@ class MixtureOfSHOsTerm(terms.Term):
         return np.array(a), np.array(c)
 
     def get_complex_coefficients(self, params):
-        log_S0, log_Q1, log_f, log_Q2, log_period = params
+        log_S0, log_Q1, mix_par, log_Q2, log_period = params
 
         Q = np.exp(log_Q1)
         if Q < 0.5:
@@ -82,9 +82,9 @@ class MixtureOfSHOsTerm(terms.Term):
         if Q < 0.5:
             return np.array(a), np.array(b), np.array(c), np.array(d)
 
-        mix = 1.0 / (1.0 + np.exp(-self.mix_par))
-        S0 = mix*np.exp(log_S0)
-        w0 = np.pi * np.exp(-log_period)
+        mix = 1.0 / (1.0 + np.exp(-mix_par))
+        S0 = mix*np.exp(log_S0 + 2*log_Q1 - 2*log_Q2)
+        w0 = 4.0 * np.pi * np.exp(-log_period)
         f = np.sqrt(4.0 * Q**2-1)
         a = a + [S0 * w0 * Q]
         b = b + [S0 * w0 * Q / f]
