@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import sys
 import json
 import pickle
 import argparse
@@ -27,6 +28,10 @@ args = parser.parse_args()
 
 def format_filename(fn):  # NOQA
     return os.path.join(args.output, "{0}".format(args.epicid), fn)
+
+if os.path.exists(format_filename("corner.png")):
+    print("skipping...")
+    sys.exit(0)
 
 os.makedirs(format_filename(""), exist_ok=True)  # NOQA
 
@@ -165,18 +170,18 @@ def log_prob(params):  # NOQA
 
 init0 = model.gp.get_parameter_vector()  # NOQA
 init = init0 + 1e-5*np.random.randn(64, len(init0))
-lp = np.array(list(map(log_prob, init)))
+lp = np.array(list(map(log_prob, init)))[:, 0]
 m = ~np.isfinite(lp)
 while np.any(m):
     init[m] = init0 + 1e-5*np.random.randn(m.sum(), len(init0))
-    lp[m] = np.array(list(map(log_prob, init[m])))
+    lp[m] = np.array(list(map(log_prob, init[m])))[:, 0]
     m = ~np.isfinite(lp)
 nwalkers, ndim = init.shape
 
 # Backend
 # Don't forget to clear it in case the file already exists
 filename = format_filename("chain.h5")  # NOQA
-backend = emcee.backends.HDFBackend(filename)
+backend = emcee.backends.HDFBackend(filename, retries=10)
 backend.reset(nwalkers, ndim)
 
 # Proposals
