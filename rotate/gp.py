@@ -41,16 +41,16 @@ def get_simple_gp(t, y, yerr):
 def get_rotation_gp(t, y, yerr, period, min_period, max_period):
     kernel = get_basic_kernel(t, y, yerr)
     kernel += MixtureOfSHOsTerm(
-        log_S0=np.log(np.var(y)),
+        log_a=np.log(np.var(y)),
         log_Q1=np.log(7.0),
         mix_par=-1.0,
         log_Q2=np.log(7.0),
         log_P=np.log(period),
         bounds=dict(
-            log_S0=(-20.0, 10.0),
-            log_Q1=(-5.0, 5.0),
+            log_a=(-20.0, 10.0),
+            log_Q1=(-0.5*np.log(2.0), 5.0),
             mix_par=(-5.0, 5.0),
-            log_Q2=(-5.0, 5.0),
+            log_Q2=(-0.5*np.log(2.0), 5.0),
             log_P=(np.log(min_period), np.log(max_period)),
         )
     )

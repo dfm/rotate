@@ -34,63 +34,35 @@ class RotationTerm(terms.Term):
         )
 
 
-class MixtureOfSHOsTerm(terms.Term):
-    parameter_names = ("log_S0", "log_Q1", "mix_par", "log_Q2", "log_P")
+class MixtureOfSHOsTerm(terms.SHOTerm):
+    parameter_names = ("log_a", "log_Q1", "mix_par", "log_Q2", "log_P")
 
     def get_real_coefficients(self, params):
-        log_S0, log_Q1, mix_par, log_Q2, log_period = params
-
-        Q = np.exp(log_Q1)
-        if Q >= 0.5:
-            a, c = np.empty(0), np.empty(0)
-        else:
-            S0 = np.exp(log_S0)
-            w0 = 2.0 * np.pi * np.exp(-log_period)
-            f = np.sqrt(1.0 - 4.0 * Q**2)
-            a = 0.5*S0*w0*Q*np.array([1.0+1.0/f, 1.0-1.0/f])
-            c = 0.5*w0/Q*np.array([1.0-f, 1.0+f])
-
-        Q = np.exp(log_Q2)
-        if Q >= 0.5:
-            return a, c
-
-        mix = 1.0 / (1.0 + np.exp(-mix_par))
-        S0 = mix*np.exp(log_S0 + 2*log_Q1 - 2*log_Q2)
-        w0 = 4.0 * np.pi * np.exp(-log_period)
-        f = np.sqrt(1.0 - 4.0 * Q**2)
-        # Dealing with autograd's lack of append
-        a = list(a) + [v for v in 0.5*S0*w0*Q*np.array([1.0+1.0/f, 1.0-1.0/f])]
-        c = list(c) + [v for v in 0.5*w0/Q*np.array([1.0-f, 1.0+f])]
-        return np.array(a), np.array(c)
+        return np.empty(0), np.empty(0)
 
     def get_complex_coefficients(self, params):
-        log_S0, log_Q1, mix_par, log_Q2, log_period = params
+        log_a, log_Q1, mix_par, log_Q2, log_period = params
 
         Q = np.exp(log_Q1)
-        if Q < 0.5:
-            a, b, c, d = [], [], [], []
-        else:
-            S0 = np.exp(log_S0)
-            w0 = 2.0 * np.pi * np.exp(-log_period)
-            f = np.sqrt(4.0 * Q**2-1)
-            a = [S0 * w0 * Q]
-            b = [S0 * w0 * Q / f]
-            c = [0.5 * w0 / Q]
-            d = [0.5 * w0 / Q * f]
+        P = np.exp(log_period)
+        log_omega1 = np.log(4*np.pi*Q) - np.log(P) - 0.5*np.log(4.0*Q*Q-1.0)
+        log_S1 = log_a - log_omega1 - log_Q1
 
+        mix = -np.log(1.0 + np.exp(-mix_par))
         Q = np.exp(log_Q2)
-        if Q < 0.5:
-            return np.array(a), np.array(b), np.array(c), np.array(d)
+        P = 0.5*np.exp(log_period)
+        log_omega2 = np.log(4*np.pi*Q) - np.log(P) - 0.5*np.log(4.0*Q*Q-1.0)
+        log_S2 = mix + log_a - log_omega2 - log_Q2
 
-        mix = 1.0 / (1.0 + np.exp(-mix_par))
-        S0 = mix*np.exp(log_S0 + 2*log_Q1 - 2*log_Q2)
-        w0 = 4.0 * np.pi * np.exp(-log_period)
-        f = np.sqrt(4.0 * Q**2-1)
-        a = a + [S0 * w0 * Q]
-        b = b + [S0 * w0 * Q / f]
-        c = c + [0.5 * w0 / Q]
-        d = d + [0.5 * w0 / Q * f]
-        return np.array(a), np.array(b), np.array(c), np.array(d)
+        c1 = super(MixtureOfSHOsTerm, self).get_complex_coefficients([
+            log_S1, log_Q1, log_omega1,
+        ])
+
+        c2 = super(MixtureOfSHOsTerm, self).get_complex_coefficients([
+            log_S2, log_Q2, log_omega2,
+        ])
+
+        return [np.array([a, b]) for a, b in zip(c1, c2)]
 
     def log_prior(self):
         lp = super(MixtureOfSHOsTerm, self).log_prior()
