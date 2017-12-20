@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import sys
 import json
 import pickle
 import argparse
@@ -25,6 +26,10 @@ args = parser.parse_args()
 
 def format_filename(fn):  # NOQA
     return os.path.join(args.output, "{0}".format(args.epicid), fn)
+
+if os.path.exists(format_filename("corner.png")):
+    print("skipping...")
+    sys.exit(0)
 
 os.makedirs(format_filename(""), exist_ok=True)  # NOQA
 
@@ -171,7 +176,7 @@ nwalkers, ndim = init.shape
 # Backend
 # Don't forget to clear it in case the file already exists
 filename = format_filename("chain.h5")  # NOQA
-backend = emcee.backends.HDFBackend(filename)
+backend = emcee.backends.HDFBackend(filename, retries=10)
 backend.reset(nwalkers, ndim)
 
 # Proposals
