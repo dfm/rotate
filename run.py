@@ -21,6 +21,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("epicid", type=int, help="the target ID")
 parser.add_argument("-o", "--output", default="output",
                     help="the name of the output directory")
+parser.add_argument("-p", "--progress", action="store_true",
+                    help="show a progress bar?")
 args = parser.parse_args()
 
 def format_filename(fn):  # NOQA
@@ -44,6 +46,8 @@ def plot_estimators():  # NOQA
     ax.loglog(period, power, "k")
     for peak in model.lomb_scargle_result["peaks"]:
         ax.axvline(peak["period"], color="k", alpha=0.3, lw=2)
+    p = len(model.t)**2*model.gp.kernel.get_psd(2*np.pi*freq)/(2*np.pi)
+    ax.plot(period, p)
     ax.annotate("periodogram", xy=(0, 1), xycoords="axes fraction",
                 ha="left", va="top", xytext=(5, -5),
                 textcoords="offset points")
@@ -60,6 +64,7 @@ def plot_estimators():  # NOQA
         while t < model.t.max():
             ax.axvline(t, color="k", lw=0.75)
             t += period
+    ax.plot(tau, len(model.t)**2*model.gp.kernel.get_value(tau))
     ax.set_xlim(0, model.t.max() - model.t.min())
     ax.annotate("autocorr function", xy=(1, 1), xycoords="axes fraction",
                 ha="right", va="top", xytext=(-5, -5),
@@ -187,8 +192,9 @@ with Pool() as pool:
 
     old_tau = np.inf
     autocorr = []
-    while True:
-        sampler.run_mcmc(init, 5000, progress=True)
+    converged = False
+    for iteration in range(20):
+        sampler.run_mcmc(init, 500, thin_by=10, progress=args.progress)
         init = None
 
         # Compute the autocorrelation time so far
@@ -199,13 +205,19 @@ with Pool() as pool:
         print(autocorr[-1])
 
         # Check convergence
-        converged = np.all(tau * 100 < sampler.iteration)
+        converged = np.all(tau * 1000 < sampler.iteration)
         converged &= np.all(np.abs(old_tau - tau) / tau < 0.1)
         if converged:
             break
         old_tau = tau
 
-flatchain = sampler.get_chain(discard=1500, thin=int(np.min(tau)), flat=True)
+    if converged:
+        print("converged")
+    else:
+        print("not converged")
+
+flatchain = sampler.get_chain(discard=2*int(np.max(tau)),
+                              thin=int(np.min(tau)), flat=True)
 fig = corner.corner(flatchain)
 fig.savefig(format_filename("corner.png"))
 plt.close(fig)

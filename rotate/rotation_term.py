@@ -35,7 +35,7 @@ class RotationTerm(terms.Term):
 
 
 class MixtureOfSHOsTerm(terms.Term):
-    parameter_names = ("log_S0", "log_Q1", "log_f", "log_Q2", "log_P")
+    parameter_names = ("log_S0", "log_Q1", "mix_par", "log_Q2", "log_P")
 
     def get_real_coefficients(self, params):
         log_S0, log_Q1, log_f, log_Q2, log_period = params
@@ -54,7 +54,8 @@ class MixtureOfSHOsTerm(terms.Term):
         if Q >= 0.5:
             return a, c
 
-        S0 = np.exp(log_f + log_S0)
+        mix = 1.0 / (1.0 + np.exp(-self.mix_par))
+        S0 = mix*np.exp(log_S0)
         w0 = np.pi * np.exp(-log_period)
         f = np.sqrt(1.0 - 4.0 * Q**2)
         # Dealing with autograd's lack of append
@@ -81,7 +82,8 @@ class MixtureOfSHOsTerm(terms.Term):
         if Q < 0.5:
             return np.array(a), np.array(b), np.array(c), np.array(d)
 
-        S0 = np.exp(log_f + log_S0)
+        mix = 1.0 / (1.0 + np.exp(-self.mix_par))
+        S0 = mix*np.exp(log_S0)
         w0 = np.pi * np.exp(-log_period)
         f = np.sqrt(4.0 * Q**2-1)
         a = a + [S0 * w0 * Q]
@@ -89,6 +91,13 @@ class MixtureOfSHOsTerm(terms.Term):
         c = c + [0.5 * w0 / Q]
         d = d + [0.5 * w0 / Q * f]
         return np.array(a), np.array(b), np.array(c), np.array(d)
+
+    def log_prior(self):
+        lp = super(MixtureOfSHOsTerm, self).log_prior()
+        if not np.isfinite(lp):
+            return -np.inf
+        mix = 1.0 / (1.0 + np.exp(-self.mix_par))
+        return lp + np.log(mix) + np.log(1.0 - mix)
 
 
 class MixtureTerm(terms.Term):
