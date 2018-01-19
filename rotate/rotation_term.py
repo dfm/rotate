@@ -43,7 +43,8 @@ class MixtureOfSHOsTerm(terms.SHOTerm):
     def get_complex_coefficients(self, params):
         log_a, log_Q1, mix_par, log_Q2, log_period = params
 
-        Q = np.exp(log_Q1)
+        Q = np.exp(log_Q2) + np.exp(log_Q1)
+        log_Q1 = np.log(Q)
         P = np.exp(log_period)
         log_omega1 = np.log(4*np.pi*Q) - np.log(P) - 0.5*np.log(4.0*Q*Q-1.0)
         log_S1 = log_a - log_omega1 - log_Q1
