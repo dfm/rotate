@@ -1,4 +1,4 @@
-% Copyright 2017 Dan Foreman-Mackey and the co-authors listed below.
+% Copyright 2017-2018 Dan Foreman-Mackey and the co-authors listed below.
 
 \documentclass[modern]{aastex61}
 
@@ -69,18 +69,18 @@
 \begin{document}\raggedbottom\sloppy\sloppypar\frenchspacing
 
 \title{%
-    The variable sky as seen by K2
+Inferring stellar rotation periods using K2 at scale
 }
 
 \author[0000-0002-9328-5652]{Daniel Foreman-Mackey}
 \affil{Center for Computational Astrophysics, Flatiron Institute, New York, NY}
 
-\author[0000-0002-0296-3826]{Rodrigo Luger}
-\affil{Department~of~Astronomy, University~of~Washington, Seattle, WA}
-
 \author[0000-0003-4540-5661]{Ruth Angus}
 \affil{Simons Fellow}
 \affil{Department of Astronomy, Columbia University, New York, NY}
+
+\author[0000-0002-0296-3826]{Rodrigo Luger}
+\affil{Department~of~Astronomy, University~of~Washington, Seattle, WA}
 
 \begin{abstract}
 
@@ -102,32 +102,36 @@ We measure all the periods.
 
 \section{Introduction}
 
-Some words... \citep{Luger:2017}
+Some words\ldots \citep{Luger:2017}
 
+\citep{Foreman-Mackey:2017} demonstrated that \celerite\ could be used to
+compute the likelihood of a GP model where the kernel is a mixture of
+stochastically-driven, damped simple harmonic oscillators (SHOs).
+The power spectral density of each term in this model is:
 \begin{eqnarray}
-k(\tau) &=&
-    \frac{a}{1+b+m}\,
-    \exp\left(-\frac{2\pi f \tau }{P\left(1+b+m\right)}\right)
-    \left[ b+m
-    +    \cos \left(\frac{2 \pi \tau}{P}\right)
-    + f\,\sin \left(\frac{2 \pi \tau}{P}\right)
-    \right]
+S_k(\omega) = \sqrt{\frac{2}{\pi}}\,
+\frac{s_k\,\omega_k}{{(\omega^2 - {\omega_k}^2)}^2 +
+    {\omega_k}^2\,\omega^2/{q_k}^2}
 \end{eqnarray}
-where
+where $s_k$ is the driving power, $\omega_k$ is the un-damped frequency, and
+$q_k$ is the quality factor of the oscillator.
+We find that a restricted mixture of three SHO terms is flexible enough to
+capture the astrophysical variability while remaining simple enough to be
+easily interpreted.
+We set the quality factor of the first oscillator to $Q_1 = 1/\sqrt{2}$ to
+capture the stellar granulation using a ``Harvey model''.
+We constrain the other two terms with
 \begin{eqnarray}
-m &=& \sqrt{1+f^2} \quad.
+a_2 &\ge& a_3, \\
+P_2 &=& 2\,P_3,\quad \mathrm{and} \\
+q_2 &\ge& q_3 > 1/2
 \end{eqnarray}
-This has the properties
-\begin{eqnarray}
-k(\tau) \ge 0
-\,,\quad
-k(0) = a
-\,,\quad\mathrm{and}\quad
-\left.\frac{\dd k(\tau)}{\dd\tau}\right|_{\tau=0} = 0
-\quad.
-\end{eqnarray}
+where $a_k = s_k\,\omega_k\,q_k$ is the amplitude of the oscillator and
+$P_k = 4\,\pi\,q_k / \sqrt{4\,{q_k}^2-1}\,\omega_k$ is the oscillation period.
 
-\acknowledgments
+
+
+\acknowledgments\
 It is a pleasure to thank
 \dfmtodo{many people}
 for helpful discussions informing the ideas and code presented here.
@@ -143,7 +147,7 @@ We are grateful to the entire \kepler\ team, past and present.
 These data were obtained from the Mikulski Archive for Space Telescopes
 (MAST).
 STScI is operated by the Association of Universities for Research in
-Astronomy, Inc., under NASA contract NAS5-26555.
+Astronomy, Inc., under NASA contract NAS5\-26555.
 Support for MAST is provided by the NASA Office of Space Science via grant
 NNX13AC07G and by other grants and contracts.
 
